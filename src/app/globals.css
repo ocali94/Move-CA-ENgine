@@ -1,26 +1,174 @@
 @import "tailwindcss";
 
+/*
+  Move brand tokens. Source of truth for every color in the app:
+  navy #182454, green #3CA848, coral #F05448.
+  :root holds the light theme; .dark is the navy-based dark mode.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --move-navy: #182454;
+  --move-green: #3ca848;
+  --move-coral: #f05448;
+
+  --background: #f3f5fa;
+  --ink: #182454;
+  --ink-muted: #4a5377;
+  --ink-faint: #7c85a6;
+  --panel: #ffffff;
+  --surface: rgba(24, 36, 84, 0.045);
+  --surface-2: rgba(24, 36, 84, 0.08);
+  --edge: rgba(24, 36, 84, 0.16);
+  --edge-soft: rgba(24, 36, 84, 0.1);
+
+  --green-ink: #2e8639;
+  --coral-ink: #d23a2e;
+  --warn: #b45309;
+  --warn-bg: rgba(180, 83, 9, 0.1);
+  --panel-shadow: 0 16px 44px rgba(24, 36, 84, 0.08);
+  --chart-grid: rgba(24, 36, 84, 0.12);
+  --chart-tick: #7c85a6;
+  --chart-tip-bg: #ffffff;
+  --chart-tip-ink: #182454;
+}
+
+.dark {
+  --background: #0d1331;
+  --ink: #eef1fb;
+  --ink-muted: #a9b2d6;
+  --ink-faint: #7681ab;
+  --panel: #151d45;
+  --surface: rgba(238, 241, 251, 0.05);
+  --surface-2: rgba(238, 241, 251, 0.09);
+  --edge: rgba(169, 178, 214, 0.22);
+  --edge-soft: rgba(169, 178, 214, 0.13);
+
+  --green-ink: #66cb77;
+  --coral-ink: #ff7d72;
+  --warn: #fbbf24;
+  --warn-bg: rgba(251, 191, 36, 0.12);
+  --panel-shadow: 0 20px 60px rgba(3, 7, 26, 0.45);
+  --chart-grid: rgba(169, 178, 214, 0.18);
+  --chart-tick: #a9b2d6;
+  --chart-tip-bg: #151d45;
+  --chart-tip-ink: #eef1fb;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-panel: var(--panel);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-edge: var(--edge);
+  --color-edge-soft: var(--edge-soft);
+  --color-navy: var(--move-navy);
+  --color-green: var(--move-green);
+  --color-green-ink: var(--green-ink);
+  --color-coral: var(--move-coral);
+  --color-coral-ink: var(--coral-ink);
+  --color-warn: var(--warn);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--background);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(60, 168, 72, 0.08), transparent 26rem),
+    var(--background);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(60, 168, 72, 0.1), transparent 28rem),
+    linear-gradient(135deg, #0d1331 0%, #182454 55%, #0d1331 100%);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+textarea {
+  resize: vertical;
+}
+
+::selection {
+  background: rgba(60, 168, 72, 0.3);
+}
+
+.move-panel {
+  background: var(--panel);
+  border: 1px solid var(--edge-soft);
+  box-shadow: var(--panel-shadow);
+}
+
+.move-input {
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid var(--edge);
+  background: var(--surface);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  color: var(--ink);
+  outline: none;
+}
+
+.move-input:focus {
+  border-color: var(--move-green);
+}
+
+.move-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--edge) transparent;
+}
+
+.move-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.move-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--edge);
+  border-radius: 999px;
+}
+
+.move-prose-tables table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.85rem;
+}
+
+.move-prose-tables th,
+.move-prose-tables td {
+  border: 1px solid var(--edge);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.move-prose-tables th {
+  background: var(--surface-2);
+  font-weight: 700;
 }
