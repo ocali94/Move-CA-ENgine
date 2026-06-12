@@ -229,6 +229,7 @@ function normalizeStoredCampaignSignal(campaign: Partial<CampaignSignal>): Campa
     whatChangedThisWeek: arrayOfStrings(campaign.whatChangedThisWeek),
     whatItMeansForDtc: arrayOfStrings(campaign.whatItMeansForDtc),
     campaignAngles: arrayOfStrings(campaign.campaignAngles),
+    tweets: arrayOfStrings(campaign.tweets),
     riskLevel: campaign.riskLevel === "low" || campaign.riskLevel === "medium" || campaign.riskLevel === "high" ? campaign.riskLevel : "medium",
     confidenceNote: typeof campaign.confidenceNote === "string" ? campaign.confidenceNote : "Refresh market data for an updated confidence note.",
     generation: campaign.generation,

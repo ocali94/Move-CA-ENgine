@@ -33,7 +33,7 @@ test("core Move CA Engine workflows render and produce outputs", async ({ page }
   await page.getByRole("button", { name: "Generate current section" }).click();
   await expect(page.getByText("Proposal guide checks")).toBeVisible({ timeout: 60000 });
   await page.getByRole("button", { name: "Approve section" }).click();
-  await expect(page.getByText("Section 2: Engagement Options")).toBeVisible();
+  await expect(page.getByText("Section 2: Package Summary")).toBeVisible();
   await page.screenshot({ path: "work/screenshots/proposal-studio.png", fullPage: true });
 
   await page.goto("http://localhost:3000/dashboard/market-signals");

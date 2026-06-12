@@ -153,6 +153,48 @@ textarea {
   border-radius: 999px;
 }
 
+.move-prose {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.move-prose h1,
+.move-prose h2,
+.move-prose h3 {
+  color: var(--ink);
+  font-weight: 800;
+  margin: 1.1rem 0 0.5rem;
+}
+
+.move-prose h2 {
+  font-size: 1.15rem;
+  border-bottom: 2px solid var(--move-green);
+  padding-bottom: 0.35rem;
+}
+
+.move-prose h3 {
+  font-size: 1rem;
+}
+
+.move-prose p {
+  margin: 0.5rem 0;
+}
+
+.move-prose ul {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.move-prose li {
+  margin: 0.3rem 0;
+}
+
+.move-prose strong {
+  color: var(--ink);
+}
+
 .move-prose-tables table {
   width: 100%;
   border-collapse: collapse;

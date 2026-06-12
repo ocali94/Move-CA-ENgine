@@ -5,6 +5,7 @@ import {
   ArrowRight,
   ArrowUp,
   BarChart3,
+  Copy,
   Database,
   FileText,
   Megaphone,
@@ -179,6 +180,7 @@ export function MarketSignalsClient() {
                   <CampaignBlock title="What it means for $1M to $50M DTC brands" items={campaign.whatItMeansForDtc ?? []} />
                   <CampaignBlock title="What Move should campaign on now" items={campaign.campaignAngles ?? []} />
                 </div>
+                {campaign.tweets?.length ? <TweetQueue tweets={campaign.tweets} /> : null}
                 <GenerationFooter generation={campaign.generation} />
               </div>
             ) : (
@@ -329,6 +331,45 @@ function ReferenceGroup({
               <p className="mt-1 break-words text-xs text-ink-faint">{reference.source}</p>
             )}
             {reference.updatedAt ? <p className="mt-1 text-xs text-ink-faint">Latest reading {formatDateTime(reference.updatedAt)}</p> : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Ready-to-post tweets built from this week's fetched numbers. One click
+ * copies a tweet so the team can paste it straight into X.
+ */
+function TweetQueue({ tweets }: { tweets: string[] }) {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  return (
+    <div className="rounded-md border border-edge-soft bg-surface p-4">
+      <h3 className="mb-1 text-sm font-black text-ink">Ready-to-post tweets</h3>
+      <p className="mb-3 text-xs text-ink-faint">Written from this week&apos;s numbers. Copy, review, post.</p>
+      <div className="grid gap-3 lg:grid-cols-2">
+        {tweets.map((tweet, index) => (
+          <div key={index} className="flex flex-col justify-between rounded-md border border-edge-soft bg-panel p-4">
+            <p className="text-sm leading-6 text-ink">{tweet}</p>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <span className={`text-xs ${tweet.length > 280 ? "font-bold text-coral-ink" : "text-ink-faint"}`}>
+                {tweet.length}/280
+              </span>
+              <ActionButton
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  void navigator.clipboard.writeText(tweet);
+                  setCopiedIndex(index);
+                  window.setTimeout(() => setCopiedIndex((current) => (current === index ? null : current)), 1500);
+                }}
+              >
+                <Copy className="h-4 w-4" />
+                {copiedIndex === index ? "Copied" : "Copy tweet"}
+              </ActionButton>
+            </div>
           </div>
         ))}
       </div>

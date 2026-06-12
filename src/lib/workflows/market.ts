@@ -196,6 +196,23 @@ export function buildCampaignSignal(pulse: DemandPulse): CampaignSignal {
             "Campaign on launch readiness: demand strength rewards brands whose operating layer can keep up.",
           ];
 
+  const sentiment = pulse.signals.find((signal) => signal.id === "UMCSENT");
+  const ratio = pulse.signals.find((signal) => signal.id === "XLY_XLP");
+  const tweets = [
+    pulse.score !== null
+      ? `Demand conditions for discretionary DTC sit at ${pulse.score}/100 right now and are ${pulse.changeLabel.toLowerCase()}. If your next PO assumes last quarter's sell-through, that is a cash decision, not a stock decision.`
+      : "",
+    sentiment?.value != null && sentiment.trend !== "unavailable"
+      ? `US consumer sentiment is at ${sentiment.value} and ${sentiment.trend === "down" ? "falling" : sentiment.trend === "up" ? "rising" : "flat"}. ${sentiment.trend === "down" ? "Shoppers cut wants before needs. Inventory discipline beats growth bets in this window." : "Watch what shoppers do with that confidence before scaling the next buy."}`
+      : "",
+    ratio?.value != null && ratio.trend === "down"
+      ? `Money is rotating from "want" brands into "need" brands (XLY/XLP at ${ratio.value}). If you sell wants, protect margin first: landed cost, reorder logic, supplier terms.`
+      : "",
+    riskLevel === "high"
+      ? "Founders ask us what to post in a soft market. Same thing we tell them about ops: stop selling growth, sell survival. Cost per unit, inventory risk, margin protection."
+      : "A clear view of inventory, supplier timing, and landed cost beats instinct in a mixed market. Most brands have the data. Few have the operating rhythm.",
+  ].filter(Boolean);
+
   return {
     id: makeId("campaign"),
     createdAt: new Date().toISOString(),
@@ -208,6 +225,7 @@ export function buildCampaignSignal(pulse: DemandPulse): CampaignSignal {
     whatChangedThisWeek,
     whatItMeansForDtc,
     campaignAngles,
+    tweets,
     riskLevel,
     confidenceNote:
       pulse.dataMode === "live"

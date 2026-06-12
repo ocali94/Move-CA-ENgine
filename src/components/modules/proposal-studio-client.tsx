@@ -34,7 +34,7 @@ import type {
   ValidationIssue,
 } from "@/lib/types";
 import { makeId } from "@/lib/utils";
-import { createProposalProject } from "@/lib/workflows/proposal";
+import { createProposalProject, markdownToHtml } from "@/lib/workflows/proposal";
 
 const sampleDiscovery = `Company: Example Brand Co
 Website: https://example.com
@@ -54,6 +54,7 @@ export function ProposalStudioClient() {
   const [chatInstruction, setChatInstruction] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const [editingSection, setEditingSection] = useState(false);
   const [extractGeneration, setExtractGeneration] = useState<GenerationMeta | null>(null);
   const [sectionGeneration, setSectionGeneration] = useState<GenerationMeta | null>(null);
   const [emailGeneration, setEmailGeneration] = useState<GenerationMeta | null>(null);
@@ -502,25 +503,38 @@ export function ProposalStudioClient() {
             {loading?.startsWith("generate") ? <LoadingState label="Drafting active section" /> : null}
             {activeSection?.content ? (
               <>
-                <textarea
-                  value={activeSection.content}
-                  onChange={(event) => {
-                    const content = event.target.value;
-                    const sections = project.sections.map((section) =>
-                      section.id === activeSection.id
-                        ? {
-                            ...section,
-                            content,
-                            status: "needs_revision" as const,
-                            validation: validateSection(activeSection.number, content, project.extractedFacts ?? null),
-                          }
-                        : section,
-                    );
-                    setProject({ ...project, sections, updatedAt: new Date().toISOString() });
-                  }}
-                  rows={18}
-                  className="move-scrollbar move-input mt-4 leading-6"
-                />
+                <div className="mt-4 flex justify-end">
+                  <ActionButton type="button" variant="ghost" onClick={() => setEditingSection((value) => !value)}>
+                    <Pencil className="h-4 w-4" />
+                    {editingSection ? "Show preview" : "Edit text"}
+                  </ActionButton>
+                </div>
+                {editingSection ? (
+                  <textarea
+                    value={activeSection.content}
+                    onChange={(event) => {
+                      const content = event.target.value;
+                      const sections = project.sections.map((section) =>
+                        section.id === activeSection.id
+                          ? {
+                              ...section,
+                              content,
+                              status: "needs_revision" as const,
+                              validation: validateSection(activeSection.number, content, project.extractedFacts ?? null),
+                            }
+                          : section,
+                      );
+                      setProject({ ...project, sections, updatedAt: new Date().toISOString() });
+                    }}
+                    rows={18}
+                    className="move-scrollbar move-input mt-2 leading-6"
+                  />
+                ) : (
+                  <div
+                    className="move-prose move-prose-tables mt-2 overflow-x-auto rounded-md border border-edge-soft bg-surface p-5"
+                    dangerouslySetInnerHTML={{ __html: markdownToHtml(activeSection.content) }}
+                  />
+                )}
                 <RuleChecklist section={activeSection} />
                 <GenerationFooter generation={sectionGeneration} />
               </>

@@ -16,26 +16,32 @@ export type { SectionValidation, ValidationIssue };
  * before display (see scrubEmDashes in utils).
  */
 
-// Only these role names may appear in the Section 2 package table. Not
-// defined anywhere in content/, so this constant is the editable source of
-// truth (documented in README).
+// Only these role names may appear in the Section 2 package table (the
+// "Talents" column). Taken from Move's real sent proposals; edit here if the
+// roster changes (documented in README).
 export const MOVE_OFFICIAL_ROLES = [
-  "Engagement Lead",
-  "Fractional Supply Chain Lead",
+  "Supply Chain Manager",
+  "Supply Chain Coordinator",
+  "Sourcing Lead",
   "Sourcing Specialist",
+  "Sourcing Support",
   "Logistics Specialist",
+  "Inventory Planning Lead",
   "Inventory Planner",
-  "Supply Chain Analyst",
+  "Project Manager",
+  "QA Support",
+  "Apparel NPD Support",
 ];
 
+// Section sequence mirrors Move's sent proposals (see work/proposal-examples).
 export const SECTION_TITLES = [
   "Cover and Context",
-  "Engagement Options",
-  "Transitional Timeline",
-  "Recommended Engagement Path",
-  "Service Levels",
-  "Scope Pillars",
-  "Investment, Assumptions, and Next Steps",
+  "Package Summary",
+  "Package Transitional Timeline",
+  "Key Differences and Recommendation",
+  "Service Level Agreement and Commitment",
+  "Detailed Scope of Work",
+  "Investment, Next Steps, and Operating Notes",
 ];
 
 type MarkdownTable = {
@@ -150,14 +156,14 @@ export function validateSection(
     case 2: {
       const tables = parseMarkdownTables(content);
       const packageTable = tables.find((table) =>
-        ["cost", "hours", "duration"].every((column) =>
+        ["cost", "duration"].every((column) =>
           table.headers.some((header) => header.toLowerCase().includes(column)),
         ),
       );
       if (!packageTable) {
         issues.push({
           rule: "s2-package-table",
-          message: "Section 2 must include a package table with Name, Cost, Hours, and Duration columns.",
+          message: "Section 2 must include a package table with Package Option, Cost, Duration, and Talents columns.",
           severity: "error",
         });
         break;
@@ -170,7 +176,7 @@ export function validateSection(
           severity: "error",
         });
       }
-      const rolesColumn = packageTable.headers.findIndex((header) => /role/i.test(header));
+      const rolesColumn = packageTable.headers.findIndex((header) => /role|talent/i.test(header));
       if (rolesColumn === -1) {
         issues.push({
           rule: "s2-roles",

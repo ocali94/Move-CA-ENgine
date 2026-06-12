@@ -307,6 +307,7 @@ export type CampaignSignal = {
   whatChangedThisWeek: string[];
   whatItMeansForDtc: string[];
   campaignAngles: string[];
+  tweets?: string[];
   riskLevel: "low" | "medium" | "high";
   confidenceNote: string;
   generation?: GenerationMeta;

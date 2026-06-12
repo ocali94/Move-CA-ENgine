@@ -12,6 +12,7 @@ const llmCampaignSchema = z.object({
   whatChangedThisWeek: z.array(z.string()).min(2),
   whatItMeansForDtc: z.array(z.string()).min(2),
   campaignAngles: z.array(z.string()).min(2).max(3),
+  tweets: z.array(z.string()).min(3).max(5),
 });
 
 /**
@@ -55,12 +56,13 @@ ${dataBlock}
 
 Demand Pulse composite: ${pulse.score}/100, status ${pulse.status}, trend ${pulse.trend}.
 
-Produce exactly three blocks:
+Produce four blocks:
 1. whatChangedThisWeek: 3 to 6 short lines, each naming a signal with its actual current value and direction in plain English.
 2. whatItMeansForDtc: 2 to 4 lines translating the movement into inventory, sourcing, logistics, COGS, margin, and cash implications for $1M to $50M DTC physical goods brands. Zero economics jargon.
 3. campaignAngles: 2 to 3 concrete angles for what Move should campaign on right now (content, social, outbound), each tied to the data direction.
+4. tweets: 3 to 5 ready-to-post tweets for Move's account, written in an operator voice for DTC founders. Each under 270 characters, references a real number or direction from the data above, no invented figures, no hype, no emoji walls, at most one hashtag total across all tweets. They should feel like a sharp operator reading the market out loud, not marketing copy.
 
-Return ONLY a JSON object: {"headline": string, "whatChangedThisWeek": string[], "whatItMeansForDtc": string[], "campaignAngles": string[]}`,
+Return ONLY a JSON object: {"headline": string, "whatChangedThisWeek": string[], "whatItMeansForDtc": string[], "campaignAngles": string[], "tweets": string[]}`,
       },
     ],
   });

@@ -63,38 +63,48 @@ export function sectionRequirements(sectionNumber: number, facts: DiscoveryExtra
   const option3 = option3Justified(facts);
   switch (sectionNumber) {
     case 1:
-      return `Section 1: Cover and Context.
-- One short framing paragraph for the client.
-- Then EXACTLY 5 to 8 bullet points (markdown "-"), each a specific pain taken from the extracted facts. Quote the client's own phrasing where a sourceQuote exists. No generic filler bullets.
-- Close with one sentence on Move's role.`;
+      return `Section 1: Cover and Context. Format it like Move's sent proposals:
+- Start with "## Proposal for {client name}".
+- One framing paragraph: "Move Supply Chain will support {client} in..." summarizing the engagement aim in 2 to 4 sentences grounded in the discovery facts.
+- Then a "**Key Pain Points**" label followed by EXACTLY 5 to 8 bullet points (markdown "-"), each a specific pain taken from the extracted facts, written as full sentences. Quote or closely paraphrase the client's own phrasing where a sourceQuote exists. Include concrete numbers from the facts (order volume, PO value, revenue) where available. No generic filler bullets.`;
     case 2:
-      return `Section 2: Engagement Options.
-- A markdown table with columns exactly: Option | Package | Cost | Hours | Duration | Move Roles.
-- Package names come from the Move service paths document.
-- Cost: use the pricing benchmarks, written as "TBD (benchmark $X)" unless the facts explicitly confirm agreed pricing. Never present a benchmark as final.
-- Move Roles cells may ONLY use these official role names: ${MOVE_OFFICIAL_ROLES.join(", ")}.
-- ${option3.justified ? `Include exactly three options. Option 3 must be Fractional Supply Chain Support. Justification: ${option3.reason}` : `Include EXACTLY TWO options (Option 1 and Option 2). Do NOT include an Option 3: ${option3.reason}`}
-- After the table, one short paragraph explaining why this option count fits the facts.`;
+      return `Section 2: Package Summary. Format it like Move's sent proposals:
+- Heading "## Package Summary".
+- A markdown table with columns exactly: Package Option | Cost | Contract Duration | Main Focus | Talents.
+- Package Option names follow Move's naming style, e.g. "Option 1: 30-Day Sourcing Trial", "Option 2: 3-Month Sourcing to Sampling and PO Readiness". Base names on the Move service paths document and the client's actual need.
+- Cost: use the pricing benchmarks, written as "TBD (benchmark $X USD, 4-week cycle)" unless the facts explicitly confirm agreed pricing. Never present a benchmark as final.
+- Main Focus: 1 to 3 crisp sentences per option describing exactly what that package does for THIS client (reference their products, regions, and constraints).
+- Talents cells may ONLY use these official Move role names: ${MOVE_OFFICIAL_ROLES.join(", ")}.
+- ${option3.justified ? `Include exactly three options. Option 3 is the ongoing/recurring support tier. Justification: ${option3.reason}` : `Include EXACTLY TWO options (Option 1 and Option 2). Do NOT include an Option 3: ${option3.reason}`}
+- After the table, one short paragraph noting costs are benchmarks pending internal confirmation.`;
     case 3:
-      return `Section 3: Transitional Timeline.
-- MUST render as a markdown table with columns: Phase | Timing | Focus | Output.
-- Timings must be consistent with the durations offered in Section 2.`;
+      return `Section 3: Package Transitional Timeline. Format it like Move's sent proposals:
+- Heading "## Package Transitional Timeline", then a bold line naming Option 1.
+- A markdown table with columns: Timeline | Activities. Rows Week 1 through Week 4 (or Month 1 to 3 if Option 2's duration is the focus), each with 2 to 4 concrete activities specific to this client's products and constraints.
+- Timings must be consistent with the durations offered in Section 2.
+- End with the standard note that this is a suggested timeline and may finish earlier depending on responsiveness and review speed.`;
     case 4:
-      return `Section 4: Recommended Engagement Path.
-- Name the recommended option and tie the recommendation directly to the client's actual pain points from the facts.
-- Include what is intentionally NOT included (no guaranteed savings, no guaranteed supplier outcomes, no final pricing without internal confirmation).`;
+      return `Section 4: Key Differences and Recommendation. Format it like Move's sent proposals:
+- Heading "## Key Differences and Recommendation".
+- One paragraph per option: "Option 1 is the leaner starting point..." / "Option 2 is the stronger path if..." explaining when each fits, tied to the client's actual situation from the facts.
+- Close with a "**Recommendation:**" paragraph naming the option to start with and why, grounded in the discovery facts (budget signals, urgency, stage).
+- Never guarantee savings or supplier outcomes, and never introduce pricing beyond what Section 2 showed.`;
     case 5:
-      return `Section 5: Service Levels.
-- MUST contain a markdown table with EXACTLY three columns titled: KPI | Commitment | Metrics.
-- The table must have 3 to 5 data rows. No other column layout is acceptable.`;
+      return `Section 5: Service Level Agreement (SLA) and Commitment. Format it like Move's sent proposals:
+- Heading "## Service Level Agreement (SLA) and Commitment".
+- A markdown table with EXACTLY three columns titled: KPI | Commitment | Metrics. No other column layout is acceptable.
+- 3 to 5 rows with KPIs specific to the recommended package (e.g. Vendor Sourcing, Cost Optimization, Sample Coordination, Sourcing Summary for a sourcing engagement). Commitments are concrete deliverables; Metrics are measurable.`;
     case 6:
-      return `Section 6: Scope Pillars.
-- 3 to 4 pillars, each as a "### Pillar N: Title" heading.
-- Each pillar MUST contain three bold labels on their own lines: **Objective:**, **Approach:**, and **Expected Outcome:**.`;
+      return `Section 6: Detailed Scope of Work. Format it like Move's sent proposals:
+- Heading "## Detailed Scope of Work".
+- 3 to 4 workstreams, each as a "### {Workstream Name}" heading named for this client's actual work (e.g. "Sourcing and Vendor Management", "Commercial and Risk Assessment").
+- Each workstream MUST contain three bold labels on their own lines: **Objective:** (one sentence), **Approach:** (a numbered list of 4 to 7 concrete steps referencing the client's actual products, regions, and constraints), and **Expected Outcome:** (2 to 3 bullets).`;
     case 7:
-      return `Section 7: Investment, Assumptions, and Next Steps.
+      return `Section 7: Investment, Next Steps, and Operating Notes. Format it like Move's sent proposals:
 - Investment stays "TBD, requires internal confirmation" unless the facts explicitly confirm pricing. If benchmarks were referenced in Section 2, reference them the same way; never introduce different amounts or durations than earlier sections.
-- A short assumptions list and a numbered next-steps list.`;
+- A numbered next-steps list (confirm option, confirm investment, contract and invoice, kickoff).
+- Then three short standard blocks in Move's voice: "**Collaboration and Communication**" (agreed channels, time zone awareness), "**Operational Considerations**" (approach and timelines may adjust during onboarding), and "**Add-On Value**" (regular check-ins; complimentary monthly consultation).
+- Close with the standard line inviting review and questions, and the italic validity note: proposal valid for 1 month from receipt, package costs may vary in subsequent months.`;
     default:
       return "";
   }
