@@ -46,23 +46,40 @@ Warehouse: US 3PL with limited inventory visibility
 Notes: They are launching new products quickly, but supplier lead times, MOQs, demand planning, and freight cost are creating friction. The founder is still involved in supply chain decisions and wants a clearer operating rhythm before the next purchase order.`;
 
 export function ProposalStudioClient() {
-  const { state, update } = useAppState();
+  const { state, update, loaded } = useAppState();
   const [project, setProject] = useState<ProposalProject>(
     () => state.proposalProjects[0] ?? createProposalProject({ clientName: "Example Brand Co", rawDiscoveryText: sampleDiscovery }),
   );
+  // localStorage hydrates one render after mount, so the initializer above only
+  // ever sees the empty server snapshot; adopt the stored project once, in
+  // render, per React's derived-state guidance.
+  const [adoptedStoredProject, setAdoptedStoredProject] = useState(false);
+  if (loaded && !adoptedStoredProject) {
+    setAdoptedStoredProject(true);
+    const stored = state.proposalProjects[0];
+    if (stored && stored.id !== project.id) setProject(stored);
+  }
   const [factsJson, setFactsJson] = useState("");
   const [chatInstruction, setChatInstruction] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [editingSection, setEditingSection] = useState(false);
+  const [selectedSectionNumber, setSelectedSectionNumber] = useState<number | null>(null);
   const [extractGeneration, setExtractGeneration] = useState<GenerationMeta | null>(null);
   const [sectionGeneration, setSectionGeneration] = useState<GenerationMeta | null>(null);
   const [emailGeneration, setEmailGeneration] = useState<GenerationMeta | null>(null);
   const [emailIssues, setEmailIssues] = useState<ValidationIssue[]>([]);
 
+  // The frontier is the next section awaiting work; clicking a section in the
+  // workflow list overrides it so approved sections stay reachable for tweaks.
+  const frontierSection = useMemo(
+    () => project.sections.find((section) => section.status !== "locked") ?? project.sections.at(-1),
+    [project.sections],
+  );
   const activeSection = useMemo(() => {
-    return project.sections.find((section) => section.status !== "locked") ?? project.sections.at(-1);
-  }, [project.sections]);
+    if (selectedSectionNumber === null) return frontierSection;
+    return project.sections.find((section) => section.number === selectedSectionNumber) ?? frontierSection;
+  }, [project.sections, selectedSectionNumber, frontierSection]);
   const activeIndex = activeSection ? activeSection.number - 1 : 0;
   const previousApproved = project.sections.filter(
     (section) => section.number < (activeSection?.number ?? 1) && section.status === "locked",
@@ -184,6 +201,10 @@ export function ProposalStudioClient() {
       setError("Generate the active section before revising it.");
       return;
     }
+    if (activeSection.status === "locked") {
+      setError("This section is locked. Unlock it before revising.");
+      return;
+    }
     setLoading("revise");
     setError(null);
     try {
@@ -249,10 +270,12 @@ export function ProposalStudioClient() {
     }
     const sections = project.sections.map((item) =>
       item.id === section.id
-        ? { ...item, status: "locked" as const, approvedAt: new Date().toISOString() }
+        ? { ...item, status: "locked" as const, approvedAt: new Date().toISOString(), reviewRecommended: false }
         : item,
     );
     saveProject({ ...project, sections, updatedAt: new Date().toISOString() }, `Approved Section ${section.number}`, section.title);
+    setSelectedSectionNumber(null);
+    setEditingSection(false);
   }
 
   function unlockSection(section: ProposalSection) {
@@ -349,7 +372,7 @@ export function ProposalStudioClient() {
               Proposal Studio
             </h1>
             <p className="mt-2 text-sm leading-6 text-ink-muted">
-              Build the proposal section by section. Every approved section locks before the next one moves forward, and every draft is checked against the Move proposal rules.
+              Build the proposal section by section; every draft is checked against the Move proposal rules. Click any section in the workflow list to revisit it, and unlock an approved section whenever it needs a tweak.
             </p>
           </div>
           <ActionButtonGroup>
@@ -357,7 +380,15 @@ export function ProposalStudioClient() {
               <FileUp className="h-4 w-4" />
               Paste a reference
             </ActionButton>
-            <ActionButton type="button" variant="ghost" onClick={() => saveProject(createProposalProject({ clientName: "New client" }), "Created new proposal project", "Blank project")}>
+            <ActionButton
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setSelectedSectionNumber(null);
+                setEditingSection(false);
+                saveProject(createProposalProject({ clientName: "New client" }), "Created new proposal project", "Blank project");
+              }}
+            >
               New project
             </ActionButton>
           </ActionButtonGroup>
@@ -394,24 +425,31 @@ export function ProposalStudioClient() {
           <h2 className="mb-4 text-lg font-black text-ink">Workflow</h2>
           <div className="space-y-2">
             {project.sections.map((section) => (
-              <div
+              <button
                 key={section.id}
-                className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-md border px-3 text-left text-sm ${
+                type="button"
+                onClick={() => {
+                  setSelectedSectionNumber(section.number);
+                  setEditingSection(false);
+                }}
+                className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-md border px-3 text-left text-sm transition-colors ${
                   section.id === activeSection?.id
                     ? "border-green/35 bg-green/12 text-ink"
-                    : "border-edge-soft bg-surface text-ink-muted"
+                    : "border-edge-soft bg-surface text-ink-muted hover:border-green/35 hover:text-ink"
                 }`}
               >
                 <span>
                   {section.number}. {section.title}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  {section.validation && !section.validation.passed ? (
-                    <TriangleAlert className="h-4 w-4 text-warn" />
+                  {section.reviewRecommended || (section.validation && !section.validation.passed) ? (
+                    <span title={section.reviewRecommended ? "An earlier section changed; review this one" : "Rule checks need review"}>
+                      <TriangleAlert className="h-4 w-4 text-warn" />
+                    </span>
                   ) : null}
                   {section.status === "locked" ? <Lock className="h-4 w-4 text-green-ink" /> : null}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
           <div className="mt-5 rounded-md border border-edge-soft bg-surface p-3">
@@ -482,34 +520,39 @@ export function ProposalStudioClient() {
                 </div>
               </div>
               {activeSection ? (
-                <ActionButtonGroup>
-                  <ActionButton type="button" onClick={() => generateSection(activeSection)} disabled={activeSection.status === "locked" || loading === `generate-${activeSection.id}`}>
-                    <RefreshCcw className="h-4 w-4" />
-                    {activeSection.content ? "Regenerate" : "Generate current section"}
-                  </ActionButton>
-                  <ActionButton type="button" variant="secondary" onClick={() => approveSection(activeSection)} disabled={activeSection.status === "locked" || !activeSection.content}>
-                    <Check className="h-4 w-4" />
-                    Approve section
-                  </ActionButton>
-                  {activeSection.status === "locked" ? (
-                    <ActionButton type="button" variant="danger" onClick={() => unlockSection(activeSection)}>
+                activeSection.status === "locked" ? (
+                  <ActionButtonGroup>
+                    <ActionButton type="button" variant="secondary" onClick={() => unlockSection(activeSection)}>
                       <Unlock className="h-4 w-4" />
-                      Unlock
+                      Unlock to edit
                     </ActionButton>
-                  ) : null}
-                </ActionButtonGroup>
+                  </ActionButtonGroup>
+                ) : (
+                  <ActionButtonGroup>
+                    <ActionButton type="button" onClick={() => generateSection(activeSection)} disabled={loading === `generate-${activeSection.id}`}>
+                      <RefreshCcw className="h-4 w-4" />
+                      {activeSection.content ? "Regenerate" : "Generate current section"}
+                    </ActionButton>
+                    <ActionButton type="button" variant="secondary" onClick={() => approveSection(activeSection)} disabled={!activeSection.content}>
+                      <Check className="h-4 w-4" />
+                      Approve section
+                    </ActionButton>
+                  </ActionButtonGroup>
+                )
               ) : null}
             </div>
             {loading?.startsWith("generate") ? <LoadingState label="Drafting active section" /> : null}
             {activeSection?.content ? (
               <>
-                <div className="mt-4 flex justify-end">
-                  <ActionButton type="button" variant="ghost" onClick={() => setEditingSection((value) => !value)}>
-                    <Pencil className="h-4 w-4" />
-                    {editingSection ? "Show preview" : "Edit text"}
-                  </ActionButton>
-                </div>
-                {editingSection ? (
+                {activeSection.status !== "locked" ? (
+                  <div className="mt-4 flex justify-end">
+                    <ActionButton type="button" variant="ghost" onClick={() => setEditingSection((value) => !value)}>
+                      <Pencil className="h-4 w-4" />
+                      {editingSection ? "Show preview" : "Edit text"}
+                    </ActionButton>
+                  </div>
+                ) : null}
+                {editingSection && activeSection.status !== "locked" ? (
                   <textarea
                     value={activeSection.content}
                     onChange={(event) => {
@@ -558,9 +601,14 @@ export function ProposalStudioClient() {
                 className="move-input leading-6"
                 placeholder="Make this warmer, add more inventory detail, remove pricing, make it sound more like Omar..."
               />
-              <ActionButton type="submit" variant="secondary" disabled={!chatInstruction || loading === "revise"}>
+              <ActionButton type="submit" variant="secondary" disabled={!chatInstruction || loading === "revise" || activeSection?.status === "locked"}>
                 Revise active section
               </ActionButton>
+              {activeSection?.status === "locked" ? (
+                <p className="text-xs leading-5 text-ink-faint">
+                  Section {activeSection.number} is approved and locked. Unlock it to revise.
+                </p>
+              ) : null}
               {loading === "revise" ? <LoadingState label="Revising section" /> : null}
             </form>
             <div className="mt-4 space-y-2">
