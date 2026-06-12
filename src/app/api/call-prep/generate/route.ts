@@ -33,7 +33,9 @@ const llmBriefSchema = z.object({
     pricePoints: z.array(z.string()),
     likelyProductionRegions: z.array(z.string()),
     operationalComplexity: z.enum(["low", "medium", "high"]),
-    notes: z.string(),
+    // Models sometimes return notes as a list; accept both rather than
+    // discarding an otherwise valid response.
+    notes: z.union([z.string(), z.array(z.string()).transform((items) => items.join(" "))]),
   }),
   painMap: z
     .array(
