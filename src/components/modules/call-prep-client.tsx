@@ -189,9 +189,9 @@ export function CallPrepClient() {
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {brief.painMap.map((pain) => (
                   <div key={pain.category} className="rounded-md border border-edge-soft bg-surface p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-bold capitalize text-ink">{pain.category.replace("_", " ")}</p>
-                      <StatusBadge kind={pain.severity === "high" ? "danger" : pain.severity === "medium" ? "warning" : "success"} className="min-h-6 px-2 py-0.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="min-w-0 break-words text-sm font-bold capitalize text-ink">{pain.category.replace(/_/g, " ")}</p>
+                      <StatusBadge kind={pain.severity === "high" ? "danger" : pain.severity === "medium" ? "warning" : "success"} className="min-h-6 shrink-0 whitespace-nowrap px-2 py-0.5">
                         {pain.severity}
                       </StatusBadge>
                     </div>
