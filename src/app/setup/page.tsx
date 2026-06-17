@@ -37,12 +37,18 @@ export default async function SetupPage() {
             <SetupRow label="Route protection" value="proxy.ts guards /dashboard, /setup, and /api" ok />
           </SetupCard>
           <SetupCard title="LLM" icon={ServerCog}>
-            <SetupRow label="Provider selected" value={llm.provider} ok />
-            <SetupRow label="Anthropic key detected" value={llm.anthropicConfigured ? "yes" : "no"} ok={llm.anthropicConfigured} />
-            <SetupRow label="OpenAI key detected" value={llm.openaiConfigured ? "yes" : "no"} ok={llm.openaiConfigured} />
+            <SetupRow
+              label="Failover chain"
+              value={llm.chain.map((entry) => entry.name).join(" → ") || llm.provider}
+              ok
+            />
+            <SetupRow label="Active provider" value={`${llm.provider}${llm.override !== "auto" ? " (forced)" : ""}`} ok={llm.activeConfigured} />
             <SetupRow label="Active model" value={llm.activeModel} ok={llm.activeConfigured} />
+            <SetupRow label="Codex key detected" value={llm.codexConfigured ? "yes" : "no"} ok={llm.codexConfigured} />
+            <SetupRow label="Gemini key detected" value={llm.geminiConfigured ? "yes" : "no"} ok={llm.geminiConfigured} />
+            <SetupRow label="Anthropic key detected" value={llm.anthropicConfigured ? "yes" : "no"} ok={llm.anthropicConfigured} />
             <p className="text-xs leading-5 text-ink-faint">
-              Without a key every module still works, but outputs come from local fallback logic and are labeled that way.
+              Providers are tried in chain order; if one fails or hits a usage limit the next runs automatically. Without any key every module still works from labeled local fallback logic.
             </p>
           </SetupCard>
           <SetupCard title="Content Library" icon={Library}>

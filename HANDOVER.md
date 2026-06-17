@@ -38,9 +38,16 @@ Current `.env.local` (local dev): `ACCESS_CODE=move-demo`, `LLM_PROVIDER=codex`,
 
 - `anthropic` — `ANTHROPIC_API_KEY` (+ optional `ANTHROPIC_MODEL`).
 - `openai` — `OPENAI_API_KEY`, optional `OPENAI_BASE_URL` (works with Gemini's OpenAI-compat endpoint), `OPENAI_REASONING_EFFORT=none` to stop reasoning models burning the token budget.
+- `gemini` — `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-2.5-flash`), `GEMINI_REASONING_EFFORT` (default `none`). Its own env slot (separate from `OPENAI_*`) so it can run as a backup alongside another provider. Implemented as a thin wrapper over the OpenAI provider pointed at Google's compat endpoint (`src/lib/llm/providers/gemini.ts`).
 - `codex` — ChatGPT OAuth token read fresh per call from `CODEX_AUTH_FILE` (Hermes-style auth.json) or `CODEX_ACCESS_TOKEN`. Hits `chatgpt.com/backend-api/codex/responses` (SSE). Only `gpt-5.5` works with a ChatGPT account.
-  - **Caveat:** the Hermes refresh flow is broken (`refresh_token_reused`), so the access token dies roughly daily and someone must re-auth in Hermes/Codex. Fine for local dev, unusable for hosted deploys (file path doesn't exist on a server). For hosting, switch to `anthropic` or `openai`.
-- Every module calls `tryGenerateJson`/`tryGenerateText` (`src/lib/llm/index.ts`) which never throw; on failure the module's deterministic fallback runs and the output is labeled "Local fallback logic, not the LLM" in a `GenerationFooter`. The header badge (`LlmStatusBadge`) shows Live AI / fallback state.
+  - **Caveat:** ChatGPT Plus has a daily usage limit (429 `usage_limit_reached`) and the Hermes refresh flow is broken, so Codex goes unavailable roughly daily. This is now largely absorbed by automatic failover (below). Still unusable for hosted deploys (reads a file off the local machine) — for hosting, make the primary `anthropic`/`openai`/`gemini`.
+
+### Multi-provider failover + switcher (added in `1f...`, see commits)
+
+- **Chain.** `LLM_PROVIDER` is primary; `LLM_FALLBACK_PROVIDERS` (comma-separated) are backups. Current local config: `LLM_PROVIDER=codex`, `LLM_FALLBACK_PROVIDERS=gemini`. `getProviderChain()` in `src/lib/llm/index.ts` resolves the ordered list.
+- **Automatic failover.** `generateWithLLM` tries each configured provider in order and returns the first success; a 429/timeout/bad-key moves to the next. So Codex hitting its limit transparently serves from Gemini instead of dropping to local fallback. `lastCall.skipped[]` records who was tried and why.
+- **Visibility + manual switch.** Header badge (`LlmStatusBadge`, `src/components/llm-status.tsx`) is now a dropdown: shows the active provider, per-provider health (Live/Unavailable/No key), a failover notice, and lets the user force Auto/Codex/Gemini. `GET /api/llm/status` reports `chain`/`primary`/`override`/`lastCall`; `POST /api/llm/provider` sets the override (in-memory, per process, resets to Auto on restart; failover still applies to a forced choice). The badge/status report the provider that *actually served* (from `lastCall`), not just the first configured one.
+- Every module calls `tryGenerateJson`/`tryGenerateText` (`src/lib/llm/index.ts`) which never throw; if the whole chain fails the module's deterministic fallback runs, labeled "Local fallback logic, not the LLM" in a `GenerationFooter`. **No module code changed for failover** — it all lives under `generateWithLLM`.
 
 ### Auth
 

@@ -24,12 +24,19 @@ export async function GET() {
   }
 
   const live = status.activeConfigured && lastCall?.ok === true;
+  // Report who actually served, not just who is configured first — a
+  // rate-limited Codex is "configured" but Gemini is doing the work.
+  const provider = lastCall?.ok ? lastCall.provider : status.provider;
+  const model = lastCall?.ok ? lastCall.model : status.activeModel;
 
   return NextResponse.json({
     mode: live ? "live" : "fallback",
-    provider: status.provider,
-    model: status.activeModel,
+    provider,
+    model,
     configured: status.activeConfigured,
+    primary: status.primary,
+    override: status.override,
+    chain: status.chain,
     lastCall,
   });
 }
