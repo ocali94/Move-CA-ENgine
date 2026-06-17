@@ -42,7 +42,7 @@ Current `.env.local` (local dev): `ACCESS_CODE=move-demo`, `LLM_PROVIDER=codex`,
 - `codex` — ChatGPT OAuth token read fresh per call from `CODEX_AUTH_FILE` (Hermes-style auth.json) or `CODEX_ACCESS_TOKEN`. Hits `chatgpt.com/backend-api/codex/responses` (SSE). Only `gpt-5.5` works with a ChatGPT account.
   - **Caveat:** ChatGPT Plus has a daily usage limit (429 `usage_limit_reached`) and the Hermes refresh flow is broken, so Codex goes unavailable roughly daily. This is now largely absorbed by automatic failover (below). Still unusable for hosted deploys (reads a file off the local machine) — for hosting, make the primary `anthropic`/`openai`/`gemini`.
 
-### Multi-provider failover + switcher (added in `1f...`, see commits)
+### Multi-provider failover + switcher (added in `66cdf84`)
 
 - **Chain.** `LLM_PROVIDER` is primary; `LLM_FALLBACK_PROVIDERS` (comma-separated) are backups. Current local config: `LLM_PROVIDER=codex`, `LLM_FALLBACK_PROVIDERS=gemini`. `getProviderChain()` in `src/lib/llm/index.ts` resolves the ordered list.
 - **Automatic failover.** `generateWithLLM` tries each configured provider in order and returns the first success; a 429/timeout/bad-key moves to the next. So Codex hitting its limit transparently serves from Gemini instead of dropping to local fallback. `lastCall.skipped[]` records who was tried and why.
@@ -69,8 +69,9 @@ Current `.env.local` (local dev): `ACCESS_CODE=move-demo`, `LLM_PROVIDER=codex`,
 - `566755c` — proposal format rebuilt against the six real sent proposals; rendered table preview (Edit/Preview toggle); tweet queue in Market Signals.
 - `3c3af10` — clickable section navigation + unlock-to-edit for approved sections; review-recommended propagation; **fixed saved project not loading on page refresh** (render-phase adoption after localStorage hydration in `proposal-studio-client.tsx`).
 - `ac17fdf` — Call Prep: tolerant Zod schema for `brandSnapshot.notes` (model sometimes returns an array; we were discarding the whole LLM response and silently falling back).
+- `66cdf84` — multi-provider failover (Codex primary → Gemini backup, automatic) + header provider switcher; new `POST /api/llm/provider`, extended `GET /api/llm/status`, new `gemini` provider.
 
-End-to-end verified 2026-06-12: login, all four modules produce LLM output (`mode: llm`, codex/gpt-5.5), proposal tables render, unlock/relock cycle works, light + dark themes, mobile widths, zero console errors (only a benign repeated Recharts sizing warning).
+End-to-end verified 2026-06-17: login, all four modules; with Codex at its daily usage limit (429) the chain auto-failed-over to Gemini and the badge showed "Live AI · Gemini"; manual switch Auto/Codex/Gemini works; dropdown opaque in dark mode; lint + build clean.
 
 ## Known issues (open, ordered by value)
 
@@ -111,6 +112,6 @@ End-to-end verified 2026-06-12: login, all four modules produce LLM output (`mod
 
 - The dev server and `npm run build` fight over `.next/` — running a build kills the running dev server. Restart dev after building.
 - Preview-browser localStorage holds seeded test data ("Bright Bottle Co" project, Peak Paddle lead/battle card) — harmless, user's own browser has their real data.
-- `LLM_PROVIDER=codex` token expires roughly daily (see Providers above). If the header badge shows fallback mode unexpectedly, that's the first thing to check (`/setup` shows live status).
+- Codex goes unavailable roughly daily (usage limit / broken refresh). With the failover chain configured this now self-heals to Gemini — the badge shows "Live AI · Gemini" and the switcher's Codex row reads "Unavailable". Only if *both* providers are down does it drop to fallback mode. `/setup` and the header dropdown both show live per-provider status.
 - React 19 hydration: the localStorage store serves an empty server snapshot during hydration; any component that snapshots store state into `useState` at mount has the stale-init bug fixed in `3c3af10` — copy that pattern (render-phase adopt once `loaded` flips) if you add similar components.
 - Em dashes are banned in generated copy (auto-scrubbed via `scrubEmDashes`); validators warn if any survive.
