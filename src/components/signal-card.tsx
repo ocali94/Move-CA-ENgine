@@ -44,14 +44,12 @@ export function SignalCard({ signal }: { signal: MarketSignal }) {
         <span className="font-semibold text-ink">What it means: </span>
         {signal.plainEnglish}
       </p>
-      {signal.dataMode && signal.dataMode !== "live" ? (
+      {/* "cached" is the normal healthy state (header carries the freshness
+          label), so only the genuine problem states get a per-signal badge. */}
+      {signal.dataMode === "demo" || signal.dataMode === "unavailable" ? (
         <div className="mt-3">
           <StatusBadge kind={signal.dataMode === "unavailable" ? "danger" : "warning"}>
-            {signal.dataMode === "cached"
-              ? "cached data"
-              : signal.dataMode === "demo"
-                ? "demo data"
-                : "source unavailable"}
+            {signal.dataMode === "demo" ? "demo data" : "source unavailable"}
           </StatusBadge>
         </div>
       ) : null}

@@ -101,11 +101,13 @@ function plainEnglishFor(id: string, trend: MarketSignal["trend"]): string {
   return byTrend[trend];
 }
 
-export async function getMarketSignals(): Promise<DemandPulse> {
+export async function getMarketSignals(options?: { force?: boolean }): Promise<DemandPulse> {
   const ttlHours = Number(process.env.MARKET_DATA_CACHE_TTL_HOURS ?? "24");
   const cached = await readCache();
 
-  if (cached && Date.now() - new Date(cached.updatedAt).getTime() < ttlHours * 60 * 60 * 1000) {
+  // `force` (the Refresh button) skips the TTL and re-fetches the sources now;
+  // normal loads reuse the cached snapshot within the TTL window.
+  if (!options?.force && cached && Date.now() - new Date(cached.updatedAt).getTime() < ttlHours * 60 * 60 * 1000) {
     return normalizePulse(cached, "cached");
   }
 

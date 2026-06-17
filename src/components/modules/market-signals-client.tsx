@@ -31,7 +31,7 @@ import { SignalCard } from "@/components/signal-card";
 import { StatusBadge } from "@/components/status-badge";
 import { addActivity, useAppState } from "@/lib/client-storage";
 import type { DemandPulse } from "@/lib/types";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, formatTimeAgo } from "@/lib/utils";
 
 const MOVE_GREEN = "#3ca848";
 const MOVE_CORAL = "#f05448";
@@ -43,11 +43,11 @@ export function MarketSignalsClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (force = false) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/market-signals/latest");
+      const response = await fetch(`/api/market-signals/latest${force ? "?refresh=1" : ""}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Market Signals refresh failed.");
       reportLlmActivity(data.campaignSignal?.generation);
@@ -91,17 +91,24 @@ export function MarketSignalsClient() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {pulse ? (
-              <StatusBadge kind={pulse.dataMode === "live" ? "success" : pulse.dataMode === "cached" ? "warning" : pulse.dataMode === "demo" ? "warning" : "danger"}>
+              <StatusBadge
+                kind={pulse.dataMode === "live" ? "success" : pulse.dataMode === "demo" ? "warning" : pulse.dataMode === "cached" ? "neutral" : "danger"}
+                title={
+                  pulse.dataMode === "cached"
+                    ? "Latest published public data, reused from cache. These macro series only update monthly or quarterly, so this is current. Click Refresh to pull again now."
+                    : undefined
+                }
+              >
                 {pulse.dataMode === "live"
-                  ? "live data"
+                  ? "Live data"
                   : pulse.dataMode === "cached"
-                    ? "cached data"
+                    ? `Public data · updated ${formatTimeAgo(pulse.updatedAt)}`
                     : pulse.dataMode === "demo"
                       ? "demo data (dev only)"
                       : "data unavailable"}
               </StatusBadge>
             ) : null}
-            <ActionButton type="button" onClick={refresh} disabled={loading}>
+            <ActionButton type="button" onClick={() => refresh(true)} disabled={loading}>
               <RefreshCcw className="h-4 w-4" />
               Refresh market data
             </ActionButton>

@@ -23,15 +23,18 @@ export function StatusBadge({
   kind = "neutral",
   icon,
   className,
+  title,
 }: {
   children: React.ReactNode;
   kind?: StatusKind;
   icon?: "lock" | "none";
   className?: string;
+  title?: string;
 }) {
   const Icon = icon === "lock" ? Lock : icon === "none" ? null : icons[kind];
   return (
     <span
+      title={title}
       className={cn(
         "inline-flex min-h-7 items-center gap-2 rounded-md border px-2.5 py-1 text-xs font-medium",
         styles[kind],
