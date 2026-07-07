@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { GenerationMeta } from "@/lib/types";
 
-type ChainEntry = { name: string; model: string; configured: boolean };
+type ChainEntry = { name: string; model: string; configured: boolean; inChain?: boolean };
 
 type LastCall = {
   provider: string;
@@ -60,7 +60,12 @@ function healthOf(entry: ChainEntry, status: LlmStatus): Health {
 }
 
 function chainSummary(status: LlmStatus) {
-  return (status.chain ?? []).map((entry) => titleCase(entry.name)).join(", then ");
+  // Only the providers the automatic order actually uses; extra switchable
+  // providers (inChain === false) are manual-only.
+  return (status.chain ?? [])
+    .filter((entry) => entry.inChain !== false)
+    .map((entry) => titleCase(entry.name))
+    .join(", then ");
 }
 
 export function LlmStatusBadge() {

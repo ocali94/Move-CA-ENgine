@@ -70,9 +70,16 @@ export function getLLMStatus() {
   // Display the chain in stable base (env) order so the switcher menu does not
   // reshuffle when an override is set; "active" reflects the override.
   const baseNames = baseChainNames();
-  const chain = baseNames.map((name) => {
+  // List every configured known provider, even ones outside the env chain, so
+  // the header switcher can force them in a pinch; inChain marks the ones the
+  // automatic order actually uses.
+  const names = [
+    ...baseNames,
+    ...KNOWN_PROVIDERS.filter((name) => !baseNames.includes(name) && createProviderByName(name).configured),
+  ];
+  const chain = names.map((name) => {
     const provider = createProviderByName(name);
-    return { name, model: provider.model, configured: provider.configured };
+    return { name, model: provider.model, configured: provider.configured, inChain: baseNames.includes(name) };
   });
   const activeName = resolveChainNames().find((name) => createProviderByName(name).configured);
   const active = chain.find((entry) => entry.name === activeName) ?? chain.find((entry) => entry.configured) ?? chain[0];
@@ -146,8 +153,15 @@ export async function generateWithLLM(input: LLMGenerateInput) {
     } catch (error) {
       const message = error instanceof Error ? error.message : "LLM call failed";
       lastError = error;
+      lastCall = {
+        at: at(),
+        ok: false,
+        provider: provider.name,
+        model: provider.model,
+        error: message,
+        skipped: skipped.length ? [...skipped] : undefined,
+      };
       skipped.push({ provider: provider.name, error: message });
-      lastCall = { at: at(), ok: false, provider: provider.name, model: provider.model, error: message };
     }
   }
 

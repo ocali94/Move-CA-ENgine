@@ -39,7 +39,7 @@ export default async function SetupPage() {
           <SetupCard title="LLM" icon={ServerCog}>
             <SetupRow
               label="Failover chain"
-              value={llm.chain.map((entry) => entry.name).join(" → ") || llm.provider}
+              value={llm.chain.filter((entry) => entry.inChain !== false).map((entry) => entry.name).join(" → ") || llm.provider}
               ok
             />
             <SetupRow label="Active provider" value={`${llm.provider}${llm.override !== "auto" ? " (forced)" : ""}`} ok={llm.activeConfigured} />
