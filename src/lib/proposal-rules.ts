@@ -221,11 +221,35 @@ export function validateSection(
       break;
     }
     case 3: {
-      if (parseMarkdownTables(content).length === 0) {
+      const tables = parseMarkdownTables(content);
+      if (tables.length === 0) {
         issues.push({
           rule: "s3-table",
           message: "Section 3 must render the transitional timeline as a table.",
           severity: "error",
+        });
+        break;
+      }
+      // Real Move proposals show a timeline block for every package option.
+      if (!/option\s*1/i.test(content) || !/option\s*2/i.test(content)) {
+        issues.push({
+          rule: "s3-all-options",
+          message: "Section 3 must include a timeline for every package option (Option 1 and Option 2 at minimum).",
+          severity: "error",
+        });
+      } else if (tables.length < 2) {
+        issues.push({
+          rule: "s3-all-options",
+          message: `Each option needs its own timeline table. Found ${tables.length} table(s).`,
+          severity: "error",
+        });
+      }
+      const timelineDecision = option3Justified(facts);
+      if (timelineDecision.justified && !/option\s*3/i.test(content)) {
+        issues.push({
+          rule: "s3-all-options",
+          message: "The facts justify an Option 3, but Section 3 has no timeline block for it.",
+          severity: "warning",
         });
       }
       break;
@@ -307,6 +331,21 @@ export function validateSection(
 export function checkConsistency(sections: ProposalSection[]): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const withContent = sections.filter((section) => section.content.trim());
+
+  // Every option offered in Section 2 needs a timeline in Section 3.
+  const s2 = withContent.find((section) => section.number === 2);
+  const s3 = withContent.find((section) => section.number === 3);
+  if (s2 && s3) {
+    const offered = [...new Set([...s2.content.matchAll(/option\s*(\d)/gi)].map((match) => match[1]))];
+    const missing = offered.filter((n) => !new RegExp(`option\\s*${n}`, "i").test(s3.content));
+    if (missing.length) {
+      issues.push({
+        rule: "s3-covers-s2-options",
+        message: `Section 2 offers Option ${missing.join(", Option ")} but Section 3 has no timeline for ${missing.length > 1 ? "them" : "it"}. Regenerate Section 3 so every option has a timeline.`,
+        severity: "error",
+      });
+    }
+  }
 
   const moneyBySection = new Map<number, string[]>();
   for (const section of withContent) {

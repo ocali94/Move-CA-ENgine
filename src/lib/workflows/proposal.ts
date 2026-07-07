@@ -217,6 +217,20 @@ Costs shown are internal benchmarks, not final pricing. Final pricing requires i
 | Week 3 | Narrow to the strongest options. Request deeper documentation, normalize quotes, and begin preliminary negotiation or validation. Surface blockers early. |
 | Week 4 | Deliver the final shortlist, comparison matrix, and summary. Recommend whether to proceed into the next phase, with estimated costs, timelines, and handoff requirements. |
 
+**Option 2: 3-Month End-to-End Engagement**
+
+| Timeline | Activities |
+|---|---|
+| Month 1 | Complete the Option 1 scope: kickoff, criteria, targeted search or planning inputs, screening, and a first comparison tracker for ${client}. |
+| Month 2 | Coordinate follow-through on the shortlist: samples, documentation packs, deeper validation, and structured follow-up with the strongest counterparties. Track progress and responsiveness. |
+| Month 3 | Consolidate ${client}'s internal feedback, negotiate final terms, and deliver a decision-ready handoff: recommended path, commercial terms, and a next-step execution checklist. |
+${option3.justified ? `
+**Option 3: Fractional Supply Chain Support**
+
+| Timeline | Activities |
+|---|---|
+| Monthly cycle | Recurring planning, sourcing, logistics, and vendor support as an embedded operating layer, with priorities reset at the start of each cycle and a monthly summary of decisions, risks, and next steps. |
+` : ""}
 Note: This is a suggested project timeline. The engagement may be completed earlier depending on responsiveness, documentation quality, and how quickly ${client} can review and approve options. The structure leaves enough room for proper vetting without rushing decisions.`,
     4: `## Key Differences and Recommendation
 

@@ -79,8 +79,10 @@ export function sectionRequirements(sectionNumber: number, facts: DiscoveryExtra
 - After the table, one short paragraph noting costs are benchmarks pending internal confirmation.`;
     case 3:
       return `Section 3: Package Transitional Timeline. Format it like Move's sent proposals:
-- Heading "## Package Transitional Timeline", then a bold line naming Option 1.
-- A markdown table with columns: Timeline | Activities. Rows Week 1 through Week 4 (or Month 1 to 3 if Option 2's duration is the focus), each with 2 to 4 concrete activities specific to this client's products and constraints.
+- Heading "## Package Transitional Timeline".
+- EVERY package option offered in Section 2 gets its own timeline block: a bold line naming the option exactly as Section 2 named it (e.g. "**Option 1: 30-Day Sourcing Trial**"), followed by its own markdown table with columns: Timeline | Activities.
+- Option 1's table uses rows Week 1 through Week 4. Option 2's table uses rows Month 1 through Month 3, where Month 1 covers the Option 1 scope and Months 2 to 3 carry it into follow-through and a decision-ready handoff.${option3.justified ? " Option 3's table describes the recurring monthly cycle." : ""}
+- Each row lists 2 to 4 concrete activities specific to this client's products and constraints. Do NOT skip any option offered in Section 2.
 - Timings must be consistent with the durations offered in Section 2.
 - End with the standard note that this is a suggested timeline and may finish earlier depending on responsiveness and review speed.`;
     case 4:
